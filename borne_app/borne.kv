@@ -1,0 +1,21 @@
+#:kivy 2.1.0
+
+<RootWidget>:
+    game_list_layout: game_list
+    
+    orientation: 'vertical'
+    padding: 10
+    spacing: 10
+
+    Label:
+        text: 'CHOISISSEZ VOTRE JEU'
+        font_size: '32sp'
+        size_hint_y: None
+        height: 50
+
+    ScrollView:
+        GridLayout:
+            id: game_list
+            cols: 1
+            spacing: 10
+            size_hint_y: None
