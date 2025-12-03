@@ -1,5 +1,7 @@
 # main.py
-from borne_app.borne import BorneApp
+from borne_app.interface import BorneInterface
 
 if __name__ == '__main__':
-    BorneApp().run()
+    # On instancie l'interface et on lance la boucle
+    app = BorneInterface()
+    app.run()
