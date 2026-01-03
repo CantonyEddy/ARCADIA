@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Dashboard - Dark Neon UI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #181818; /* Fond principal très sombre */
+            --bg-secondary: #252525; /* Fond des panneaux/cartes */
+            --bg-tertiary: #303030; /* Fond des éléments survolés/sélectionnés */
+            --text-primary: #ffffff; /* Texte principal */
+            --text-secondary: #a0a0a0; /* Texte secondaire */
+            --accent-color: #ff6b00; /* Orange néon */
+            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Barre latérale gauche */
+        .sidebar {
+            width: 80px;
+            background-color: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 30px;
+            border-right: 1px solid #333;
+        }
+
+        .sidebar-icon {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-icon:hover, .sidebar-icon.active {
+            color: var(--accent-color);
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-tertiary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: auto;
+        }
+
+        /* Zone principale */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Barre supérieure */
+        .top-bar {
+            height: 70px;
+            background-color: var(--bg-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            border-bottom: 1px solid #333;
+        }
+
+        .console-tabs {
+            display: flex;
+            gap: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background-color: var(--accent-color);
+            color: var(--text-primary);
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+        }
+
+        .time {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Contenu principal (Liste + Détails) */
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Liste des jeux */
+        .game-list {
+            flex: 2;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* Carte de jeu */
+        .game-card {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-secondary);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .game-card:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .game-card.selected {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
+        }
+
+        .game-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background-color: #444;
+            margin-right: 15px;
+            background-image: url('https://placehold.co/60x60/333/fff?text=Jeu');
+            background-size: cover;
+        }
+
+        .game-info-list h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+
+        .game-info-list p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Panneau de détails */
+        .detail-panel {
+            flex: 3;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .detail-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 16px;
+            background-color: #444;
+            margin-bottom: 30px;
+            background-image: url('https://placehold.co/300x300/222/fff?text=GHOSTS%27N+GOBLINS');
+            background-size: cover;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+        }
+
+        .detail-title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+            text-transform: uppercase;
+        }
+
+        .detail-description {
+            text-align: center;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 40px;
+            max-width: 80%;
+        }
+
+        .play-button {
+            padding: 15px 60px;
+            font-size: 20px;
+            font-weight: 700;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(45deg, var(--accent-color), #ff9e00);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.6);
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 107, 0, 0.8);
+        }
+
+        /* Scrollbar custom */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="profile-icon">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="sidebar-icon active"><i class="fas fa-home"></i></div>
+        <div class="sidebar-icon"><i class="fas fa-gamepad"></i></div>
+        <div class="sidebar-icon"><i class="fas fa-cog"></i></div>
+        <div class="sidebar-icon"><i class="fas fa-ellipsis-h"></i></div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="console-tabs">
+                <div class="tab active">NES</div>
+                <div class="tab">SNES</div>
+                <div class="tab">ATARI</div>
+                <div class="tab">PS1</div>
+            </div>
+            <div class="time">12:45</div>
+        </div>
+
+        <div class="content-area">
+            <div class="game-list">
+                <div class="game-card">
+                    <div class="game-thumb"></div>
+                    <div class="game-info-list">
+                        <h3>Super Mario Bros</h3>
+                        <p>[NES] - Plateforme</p>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb"></div>
+                    <div class="game-info-list">
+                        <h3>The Legend of Zelda</h3>
+                        <p>[NES] - Aventure</p>
+                    </div>
+                </div>
+                <div class="game-card selected">
+                    <div class="game-thumb" style="background-image: url('cover-placeholder.jpg')"></div>
+                    <div class="game-info-list">
+                        <h3>Ghosts'n Goblins</h3>
+                        <p>[NES] - Action / Plateforme</p>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb"></div>
+                    <div class="game-info-list">
+                        <h3>Metroid</h3>
+                        <p>[NES] - Action-Aventure</p>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb"></div>
+                    <div class="game-info-list">
+                        <h3>Castlevania</h3>
+                        <p>[NES] - Plateforme</p>
+                    </div>
+                </div>
+                </div>
+
+            <div class="detail-panel">
+                <div class="detail-image"></div>
+                <h2 class="detail-title">GHOSTS'N GOBLINS</h2>
+                <p class="detail-description">
+                    Description : Ghosts'n Goblins est un jeu de plateforme/action culte, connu pour sa difficulté légendaire. Incarnez le chevalier Arthur et traversez des niveaux infestés de démons, zombies et autres créatures pour sauver la princesse Prin-Prin. Un classique de l'arcade.
+                </p>
+                <button class="play-button">JOUER</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
