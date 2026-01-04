@@ -1,0 +1,38 @@
+[
+    {
+        "name": "Donkey Kong",
+        "path": "Roms/nes/Donkey Kong.zip",
+        "platform": "nes",
+        "core_name": "fceumm_libretro",
+        "resume": "Classic arcade game featuring Mario as he attempts to rescue Pauline from Donkey Kong.",
+        "genre": "Platformer",
+        "cover": "assets/covers_game/cover-placeholder.jpg"
+    },
+    {
+        "name": "Mortal Kombat Trilogy",
+        "path": "Roms/snes/Mortal-Kombat-Trilogy-Europe.zip",
+        "platform": "snes",
+        "core_name": "fbalpha2012_cps1_libretro",
+        "resume": "Fighting game where players battle in a tournament of martial arts.",
+        "genre": "Fighting",
+        "cover": "assets/covers_game/cover-placeholder.jpg"
+    },
+    {
+        "name": "Street Fighter II The World Warrior",
+        "path": "Roms/snes/Street Fighter II - The World Warrior.zip",
+        "platform": "snes",
+        "core_name": "fbalpha2012_cps1_libretro.dll",
+        "resume": "Fighting game where players battle in a tournament of martial arts.",
+        "genre": "Fighting",
+        "cover": "assets/covers_game/cover-placeholder.jpg"
+    },
+    {
+        "name": "Super Mario World",
+        "path": "Roms/snes/Super Mario World (USA).zip",
+        "platform": "snes",
+        "core_name": "fbalpha2012_cps1_libretro.dll",
+        "resume": "Classic platformer where Mario embarks on a quest to save Princess Peach from Bowser (again :) ).",
+        "genre": "Platformer",
+        "cover": "assets/covers_game/cover-placeholder.jpg"
+    }
+]

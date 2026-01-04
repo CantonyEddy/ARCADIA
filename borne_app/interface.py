@@ -49,7 +49,7 @@ class BorneInterface:
         self.font_time = pygame.font.SysFont("Consolas", 24, bold=True)
 
         # Données
-        self.games_list = game_scanner.scan_roms()
+        self.games_list = game_scanner.load_games_data()
         self.selected_index = 0
         self.scroll_y = 0
         
@@ -253,7 +253,7 @@ class BorneInterface:
             # Textes
             title_color = C_TXT_PRI if is_sel else C_TXT_SEC
             txt_name = self.font_bold.render(game['name'], True, title_color)
-            txt_sys = self.font_sml.render(f"[{game['system']}]", True, C_ACCENT if is_sel else (100,100,100))
+            txt_sys = self.font_sml.render(f"[{game['platform']}]", True, C_ACCENT if is_sel else (100,100,100))
             
             self.ecran.blit(txt_name, (rect_item.x + 85, rect_item.y + 15))
             self.ecran.blit(txt_sys, (rect_item.x + 85, rect_item.y + 45))
@@ -292,7 +292,7 @@ class BorneInterface:
             # Description
             desc_y = rect_panel_bg.y + 460
             lines = [
-                f"Système: {game['system'].upper()}",
+                f"Système: {game['platform'].upper()}",
                 "Un classique intemporel de l'arcade.",
                 "Préparez-vous à revivre l'expérience originale."
             ]

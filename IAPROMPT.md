@@ -26,7 +26,7 @@ Les fichiers utilisés pour le prototype sont :
 
 1. **borne.py** (interface Kivy)
    - Charge borne.kv
-   - Récupère la liste des ROMs via `game_scanner.scan_roms()`
+   - Récupère la liste des ROMs via `game_scanner.load_games_data()`
    - Affiche un bouton pour chaque jeu
    - Appelle `launcher.launch_game(game_data)` pour lancer un jeu
 
