@@ -76,6 +76,38 @@ class BorneInterface:
         self.item_height = 80
         self.item_margin = 15
 
+        self.texture_cache = {}
+
+    def get_cached_image(self, path, size, color_override=None):
+        """
+        Récupère une image depuis le cache ou la charge si nécessaire.
+        path: chemin du fichier
+        size: tuple (largeur, hauteur)
+        color_override: couleur à appliquer (pour tes icônes sidebar)
+        """
+        # On crée une clé unique pour cette demande
+        key = (path, size, color_override)
+        
+        if key not in self.texture_cache:
+            # SI l'image n'est pas connue, on fait le travail lourd (UNE SEULE FOIS)
+            try:
+                img = pygame.image.load(path).convert_alpha()
+                img = pygame.transform.smoothscale(img, size)
+                
+                # Gestion couleur (pour tes icônes sidebar)
+                if color_override:
+                    img.fill(color_override, special_flags=pygame.BLEND_RGBA_MULT)
+                    
+                self.texture_cache[key] = img
+            except Exception as e:
+                # En cas d'erreur (fichier manquant), on retourne un carré vide pour ne pas planter
+                print(f"Erreur chargement {path}: {e}")
+                fallback = pygame.Surface(size)
+                fallback.fill((255, 0, 255)) # Magenta moche pour voir l'erreur
+                self.texture_cache[key] = fallback
+
+        return self.texture_cache[key]
+
     def run(self):
         clock = pygame.time.Clock()
         running = True
@@ -203,11 +235,9 @@ class BorneInterface:
             if i == 0: # Avatar rond
                 pygame.draw.circle(self.ecran, C_BG_TERTIARY, (W_SIDEBAR//2, y_icon), 20)
             else:
-                icon = config.get_icon_path(char)
-                lbl_icon = pygame.image.load(icon).convert_alpha()
-                lbl_icon = pygame.transform.smoothscale(lbl_icon, (30, 30))
-                #mettre l'icon en orange
-                lbl_icon.fill(C_ACCENT, special_flags=pygame.BLEND_RGBA_MULT)
+                icon_path = config.get_icon_path(char)
+                # On utilise notre cache, en passant la couleur C_ACCENT
+                lbl_icon = self.get_cached_image(icon_path, (30, 30), color_override=C_ACCENT)
                 self.ecran.blit(lbl_icon, lbl_icon.get_rect(center=(W_SIDEBAR//2, y_icon)))
             y_icon += 80
 
@@ -271,8 +301,8 @@ class BorneInterface:
 
             # Thumbnail carré
             rect_thumb = pygame.Rect(rect_item.x + 10, rect_item.y + 10, 60, 60)
-            rect_thumb_img = pygame.image.load(game['cover']).convert_alpha()
-            rect_thumb_img = pygame.transform.smoothscale(rect_thumb_img, (60, 60))
+            rect_thumb_img = self.get_cached_image(game['cover'], (60, 60))
+            self.ecran.blit(rect_thumb_img, rect_thumb)
             pygame.draw.rect(self.ecran, (54,20,98), rect_thumb, border_radius=8)
             self.ecran.blit(rect_thumb_img, rect_thumb)
             
@@ -307,8 +337,8 @@ class BorneInterface:
             pygame.draw.rect(self.ecran, (50,50,50), rect_img_big, border_radius=RADIUS)
 
             # --- GESTION DE L'IMAGE ---
-            lbl_cover = pygame.image.load(game['cover']).convert_alpha()
-            lbl_cover = pygame.transform.smoothscale(lbl_cover, (300, 300))
+            lbl_cover_base = self.get_cached_image(game['cover'], (300, 300))
+            lbl_cover = lbl_cover_base.copy()
 
             # 1. Création du masque (le "pochoir")
             mask = pygame.Surface((300, 300), pygame.SRCALPHA)
