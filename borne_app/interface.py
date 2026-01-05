@@ -3,6 +3,7 @@ import sys
 import datetime
 from . import game_scanner
 from . import launcher
+from . import config
 
 # --- PALETTE DE COULEURS (Basée sur votre front.html) ---
 # Fonds
@@ -50,7 +51,10 @@ class BorneInterface:
 
         # Données
         self.games_list = game_scanner.load_games_data()
+        self.games_list_by_platform = {}
+        self.tabs = config.get_all_core_keys()
         self.selected_index = 0
+        self.selected_tab = 0
         self.scroll_y = 0
         
         # Calcul des zones
@@ -90,12 +94,22 @@ class BorneInterface:
                     
                     # Navigation Liste
                     elif event.key == pygame.K_DOWN:
-                        self.selected_index = min(len(self.games_list)-1, self.selected_index + 1)
+                        self.selected_index = min(len(self.games_list_by_platform)-1, self.selected_index + 1)
                         self.ajuster_scroll()
                     elif event.key == pygame.K_UP:
                         self.selected_index = max(0, self.selected_index - 1)
                         self.ajuster_scroll()
-                    
+
+                    # Navigation Tabs
+                    elif event.key == pygame.K_LEFT:
+                        self.selected_tab = max(0, self.selected_tab - 1)
+                        self.selected_index = 0
+                        self.ajuster_scroll()
+                    elif event.key == pygame.K_RIGHT:
+                        self.selected_tab = min(len(self.tabs) - 1, self.selected_tab + 1)
+                        self.selected_index = 0
+                        self.ajuster_scroll()
+
                     # Lancer jeu
                     elif event.key == pygame.K_RETURN:
                         self.lancer_jeu()
@@ -128,7 +142,7 @@ class BorneInterface:
             self.scroll_y = y_pos + self.item_height + PADDING - self.rect_list_area.height
 
     def limiter_scroll(self):
-        content_h = len(self.games_list) * (self.item_height + self.item_margin) + PADDING
+        content_h = len(self.games_list_by_platform) * (self.item_height + self.item_margin) + PADDING
         max_s = max(0, content_h - self.rect_list_area.height)
         self.scroll_y = max(0, min(self.scroll_y, max_s))
 
@@ -137,7 +151,7 @@ class BorneInterface:
         if self.rect_list_area.collidepoint(pos):
             rel_y = pos[1] - self.rect_list_area.y + self.scroll_y - PADDING
             idx = int(rel_y // (self.item_height + self.item_margin))
-            if 0 <= idx < len(self.games_list):
+            if 0 <= idx < len(self.games_list_by_platform):
                 self.selected_index = idx
         
         # Clic Bouton Jouer ? (Détection approximative zone bouton)
@@ -151,8 +165,8 @@ class BorneInterface:
             self.lancer_jeu()
 
     def lancer_jeu(self):
-        if not self.games_list: return
-        game = self.games_list[self.selected_index]
+        if not self.games_list_by_platform: return
+        game = self.games_list_by_platform[self.selected_index]
         
         # Effet visuel simple au lancement
         overlay = pygame.Surface((self.w_ecran, self.h_ecran))
@@ -167,6 +181,10 @@ class BorneInterface:
         
         launcher.launch_game(game)
         pygame.display.set_mode((self.w_ecran, self.h_ecran), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+
+    def get_games_for_selected_tab(self):
+        platform_key = self.tabs[self.selected_tab]
+        self.games_list_by_platform = [g for g in self.games_list if g['platform'].upper() == platform_key.upper()]
 
     # --- RENDU GRAPHIQUE ---
     def draw(self, time_str, mouse_pos):
@@ -185,8 +203,12 @@ class BorneInterface:
             if i == 0: # Avatar rond
                 pygame.draw.circle(self.ecran, C_BG_TERTIARY, (W_SIDEBAR//2, y_icon), 20)
             else:
-                txt = self.font_bold.render(char, True, color)
-                self.ecran.blit(txt, txt.get_rect(center=(W_SIDEBAR//2, y_icon)))
+                icon = config.get_icon_path(char)
+                lbl_icon = pygame.image.load(icon).convert_alpha()
+                lbl_icon = pygame.transform.smoothscale(lbl_icon, (30, 30))
+                #mettre l'icon en orange
+                lbl_icon.fill(C_ACCENT, special_flags=pygame.BLEND_RGBA_MULT)
+                self.ecran.blit(lbl_icon, lbl_icon.get_rect(center=(W_SIDEBAR//2, y_icon)))
             y_icon += 80
 
         # 2. TOPBAR (Haut)
@@ -194,10 +216,10 @@ class BorneInterface:
         pygame.draw.line(self.ecran, (60,60,60), (W_SIDEBAR, H_TOPBAR), (self.w_ecran, H_TOPBAR))
         
         # Onglets (Tabs)
-        tabs = ["NES", "SNES", "ATARI", "PS1"]
+        tabs = self.tabs.copy()
         x_tab = W_SIDEBAR + 40
         for tab in tabs:
-            is_active = (tab == "NES")
+            is_active = (tab == tabs[self.selected_tab])
             bg_color = C_ACCENT if is_active else C_BG_SECONDARY
             txt_color = C_TXT_PRI if is_active else C_TXT_SEC
             
@@ -223,10 +245,11 @@ class BorneInterface:
         # 3. LISTE DES JEUX (Gauche)
         # Clip pour le scroll
         self.ecran.set_clip(self.rect_list_area)
+        self.get_games_for_selected_tab()
         
         start_y = self.rect_list_area.y + PADDING - self.scroll_y
         
-        for i, game in enumerate(self.games_list):
+        for i, game in enumerate(self.games_list_by_platform):
             y = start_y + i * (self.item_height + self.item_margin)
             
             # Optimisation affichage
@@ -248,7 +271,10 @@ class BorneInterface:
 
             # Thumbnail carré
             rect_thumb = pygame.Rect(rect_item.x + 10, rect_item.y + 10, 60, 60)
-            pygame.draw.rect(self.ecran, (20,20,20), rect_thumb, border_radius=8)
+            rect_thumb_img = pygame.image.load(game['cover']).convert_alpha()
+            rect_thumb_img = pygame.transform.smoothscale(rect_thumb_img, (60, 60))
+            pygame.draw.rect(self.ecran, (54,20,98), rect_thumb, border_radius=8)
+            self.ecran.blit(rect_thumb_img, rect_thumb)
             
             # Textes
             title_color = C_TXT_PRI if is_sel else C_TXT_SEC
@@ -266,21 +292,35 @@ class BorneInterface:
         rect_panel_bg = self.rect_detail_area.inflate(-40, -40)
         pygame.draw.rect(self.ecran, C_BG_SECONDARY, rect_panel_bg, border_radius=RADIUS)
         
-        if self.games_list:
-            game = self.games_list[self.selected_index]
+        if self.games_list_by_platform:
+            game = self.games_list_by_platform[self.selected_index]
             cx = rect_panel_bg.centerx
             
             # Grande Image (Carré)
             rect_img_big = pygame.Rect(0, 0, 300, 300)
             rect_img_big.center = (cx, rect_panel_bg.y + 200)
-            pygame.draw.rect(self.ecran, (20,20,20), rect_img_big, border_radius=RADIUS)
-            # Ombre portée image
+
+            # Ombre portée (décalée de 10px)
             pygame.draw.rect(self.ecran, (0,0,0), rect_img_big.move(10, 10), border_radius=RADIUS) 
-            pygame.draw.rect(self.ecran, (50,50,50), rect_img_big, border_radius=RADIUS) # Re-dessin dessus
-            
-            # Placeholder texte image
-            lbl_cover = self.font_reg.render("Cover Art", True, (100,100,100))
-            self.ecran.blit(lbl_cover, lbl_cover.get_rect(center=rect_img_big.center))
+
+            # Fond gris (au cas où l'image a de la transparence)
+            pygame.draw.rect(self.ecran, (50,50,50), rect_img_big, border_radius=RADIUS)
+
+            # --- GESTION DE L'IMAGE ---
+            lbl_cover = pygame.image.load(game['cover']).convert_alpha()
+            lbl_cover = pygame.transform.smoothscale(lbl_cover, (300, 300))
+
+            # 1. Création du masque (le "pochoir")
+            mask = pygame.Surface((300, 300), pygame.SRCALPHA)
+            # On dessine un rectangle blanc arrondi sur le masque transparent
+            pygame.draw.rect(mask, (255, 255, 255), (0, 0, 300, 300), border_radius=RADIUS)
+
+            # 2. Application du masque sur l'image
+            # Note : on ne fait PAS "lbl_cover =", car blit modifie l'image en place !
+            lbl_cover.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+            # 3. Affichage final
+            self.ecran.blit(lbl_cover, rect_img_big)
             
             # Titre Jeu (Gros Orange)
             txt_big_title = self.font_title.render(game['name'].upper(), True, C_ACCENT)
@@ -293,8 +333,7 @@ class BorneInterface:
             desc_y = rect_panel_bg.y + 460
             lines = [
                 f"Système: {game['platform'].upper()}",
-                "Un classique intemporel de l'arcade.",
-                "Préparez-vous à revivre l'expérience originale."
+                f"{game['resume']}"
             ]
             for line in lines:
                 t = self.font_reg.render(line, True, C_TXT_SEC)

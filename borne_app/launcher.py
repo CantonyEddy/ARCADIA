@@ -16,9 +16,9 @@ def launch_game(game_data):
         # 1. Récupère les chemins de base
         retroarch_cmd = config.get_path('retroarch_exe')
         cores_dir = config.get_path('cores_dir')
-        
+
         # 2. Construit le nom complet du core
-        core_name = game_data['core_name'] # Doit être "snes9x_libretro", etc.
+        core_name = config.get_core_map(game_data['platform']) # Doit être "snes9x_libretro", etc.
         core_ext = ".dll" if platform.system() == "Windows" else ".so"
         core_path = os.path.join(cores_dir, f"{core_name}{core_ext}")
         
@@ -48,7 +48,7 @@ def launch_game(game_data):
         # --- DEBUG 4: Erreur si 'core_name' n'existe pas ---
         print(f"!!!!! ERREUR FATALE (launcher.py) !!!!!")
         print(f"La clé {e} n'a pas été trouvée dans game_data.")
-        print("Vérifie que 'game_scanner.py' envoie bien 'core_name'.")
+        print("Vérifie que 'game_scanner.py' envoie bien 'platform'.")
         print("-------------------------------------------\n")
 
     except Exception as e:

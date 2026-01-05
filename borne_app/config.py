@@ -25,9 +25,17 @@ def load_json(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-"""def get_core_map():
+def get_core_map(key):
     # Le 'libretro.dll' ou '.so' sera ajouté par le launcher
-    return dict(config.items('CoreMap'))"""
+    return config.get('CoreMap', key)
+
+def get_all_core_keys():
+    """Retourne une liste de toutes les clés dans la section [CoreMap]."""
+    return config.options('CoreMap')
+
+def get_icon_path(key):
+    """Récupère le chemin d'une icône depuis la section [icons]"""
+    return config.get('icons', key)
 
 """def get_rom_extensions():
     ext_string = config.get('Settings', 'rom_extensions')
