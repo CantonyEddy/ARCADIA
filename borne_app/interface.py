@@ -107,6 +107,9 @@ class BorneInterface:
                 self.texture_cache[key] = fallback
 
         return self.texture_cache[key]
+    
+    def clear_cache(self):
+        self.texture_cache = {}
 
     def run(self):
         clock = pygame.time.Clock()
