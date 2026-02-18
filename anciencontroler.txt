@@ -1,0 +1,65 @@
+import pygame
+import sys
+
+pygame.init()
+# Initialisation du module joystick
+pygame.joystick.init()
+
+if pygame.joystick.get_count() == 0:
+    print("Aucune manette détectée !")
+    sys.exit()
+
+joy = pygame.joystick.Joystick(0)
+joy.init()
+
+print("Manette détectée :", joy.get_name())
+print("Boutons :", joy.get_numbuttons())
+print("Axes :", joy.get_numaxes())
+
+DEADZONE = 0.5
+clock = pygame.time.Clock()
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        # Boutons arcade
+        if event.type == pygame.JOYBUTTONDOWN:
+            print("Bouton", event.button, "appuyé")
+        if event.type == pygame.JOYBUTTONUP:
+            print("Bouton", event.button, "relâché")
+        # Axes joystick arcade
+        if event.type == pygame.JOYAXISMOTION:
+            value = round(event.value, 2)
+            if abs(value) < DEADZONE:
+                value = 0
+            if event.axis == 0:
+                print("AXE X :", value)
+            if event.axis == 1:
+                print("AXE Y :", value)
+            # event.axis = 0 : X, 1 : Y
+            # print("Axe", event.axis, "=", round(event.value, 2))
+        clock.tick(60)
+
+    buttons = joy.get_numbuttons()
+    axes = joy.get_numaxes()
+
+    while True:
+        pygame.event.pump()
+        for i in range(buttons):
+            if joy.get_button(i):
+                print(f"BOUTON {i} MAINTENU")
+        x = joy.get_axis(0)
+        y = joy.get_axis(1)
+
+        if x < -0.5:
+            print("GAUCHE")
+        elif x > 0.5:
+            print("DROITE")
+
+        if y < -0.5:
+            print("HAUT")
+        elif y > 0.5:
+            print("BAS")
+
