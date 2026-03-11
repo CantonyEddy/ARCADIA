@@ -1,0 +1,34 @@
+[
+    {
+        "name": "Donkey Kong",
+        "rom_path": "Roms/nes/Donkey Kong.zip",
+        "platform": "NES",
+        "resume": "Classic arcade game featuring Mario as he attempts to rescue Pauline from Donkey Kong.",
+        "genre": "Platformer",
+        "cover": "assets/covers_game/DKC.webp"
+    },
+    {
+        "name": "Mortal Kombat Trilogy",
+        "rom_path": "Roms/snes/Mortal-Kombat-Trilogy-Europe.zip",
+        "platform": "SNES",
+        "resume": "Fighting game where players battle in a tournament of martial arts.",
+        "genre": "Fighting",
+        "cover": "assets/covers_game/MKT.jpg"
+    },
+    {
+        "name": "Street Fighter II The World Warrior",
+        "rom_path": "Roms/snes/Street Fighter II - The World Warrior.zip",
+        "platform": "SNES",
+        "resume": "Fighting game where players battle in a tournament of martial arts.",
+        "genre": "Fighting",
+        "cover": "assets/covers_game/sf2.jpg"
+    },
+    {
+        "name": "Super Mario World",
+        "rom_path": "Roms/snes/Super Mario World.zip",
+        "platform": "SNES",
+        "resume": "Classic platformer where Mario embarks on a quest to save Princess Peach from Bowser (again :) ).",
+        "genre": "Platformer",
+        "cover": "assets/covers_game/SMW.jpg"
+    }
+]
