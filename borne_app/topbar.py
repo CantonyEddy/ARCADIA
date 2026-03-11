@@ -53,7 +53,7 @@ class TopBar:
                     else (C_ACCENT if is_active else C_BG_SECONDARY)
                 )
                 txt_color = C_TXT_PRI if is_active else C_TXT_SEC
-                txt_surf = self.font_bold.render(tab, True, txt_color)
+                txt_surf = self.font_bold.render(tab.upper(), True, txt_color)
                 w_pill = txt_surf.get_width() + 40
                 rect_pill = pygame.Rect(
                     x_tab, (H_TOPBAR - 40) // 2, w_pill, 40
