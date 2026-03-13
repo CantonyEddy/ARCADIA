@@ -17,7 +17,7 @@ PATH_SECTION = 'Paths_Windows' if current_os == 'Windows' else 'Paths_Linux'
 # --- Fonctions pour accéder à la config ---
 
 def get_path(key):
-    """Récupère un chemin depuis la section [Paths_...]"""
+    """Cherche uniquement dans [Paths_Windows] ou [Paths_Linux]"""
     return config.get(PATH_SECTION, key)
 
 def load_json(file_path):
@@ -37,6 +37,7 @@ def get_icon_path(key):
     """Récupère le chemin d'une icône depuis la section [icons]"""
     return config.get('icons', key)
 
-"""def get_rom_extensions():
+def get_rom_extensions():
+    """Cherche uniquement dans [Settings]"""
     ext_string = config.get('Settings', 'rom_extensions')
-    return tuple(ext.strip() for ext in ext_string.split(','))"""
+    return tuple(ext.strip() for ext in ext_string.split(','))

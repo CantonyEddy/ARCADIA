@@ -72,14 +72,14 @@ def draw_games_view(app, mouse_pos):
 
         # Thumbnail
         rect_thumb = pygame.Rect(rect_item.x + 10, rect_item.y + 10, 60, 60)
-        rect_thumb_img = app.image_cache.get(game["cover"], (60, 60))
+        rect_thumb_img = app.image_cache.get(game["Cover"], (60, 60))
         app.ecran.blit(rect_thumb_img, rect_thumb)
         pygame.draw.rect(app.ecran, (54, 20, 98), rect_thumb, border_radius=8)
         app.ecran.blit(rect_thumb_img, rect_thumb)
 
         # Textes
         title_color = C_TXT_PRI if (is_sel and list_has_focus) else C_TXT_SEC
-        txt_name = utils.FONT_BOLD.render(game["name"], True, title_color)
+        txt_name = utils.FONT_BOLD.render(game["Name"], True, title_color)
         txt_sys = utils.FONT_SMALL.render(
             f"[{game['platform']}]",
             True,
@@ -116,7 +116,7 @@ def draw_games_view(app, mouse_pos):
     )
     pygame.draw.rect(app.ecran, (50, 50, 50), rect_img_big, border_radius=RADIUS)
 
-    lbl_cover_base = app.image_cache.get(game["cover"], (300, 300))
+    lbl_cover_base = app.image_cache.get(game["Cover"], (300, 300))
     lbl_cover = lbl_cover_base.copy()
 
     mask = pygame.Surface((300, 300), pygame.SRCALPHA)
@@ -125,9 +125,9 @@ def draw_games_view(app, mouse_pos):
     app.ecran.blit(lbl_cover, rect_img_big)
 
     # Titre
-    txt_big_title = utils.FONT_TITLE.render(game["name"].upper(), True, C_ACCENT)
+    txt_big_title = utils.FONT_TITLE.render(game["Name"].upper(), True, C_ACCENT)
     txt_shadow = utils.FONT_TITLE.render(
-        game["name"].upper(),
+        game["Name"].upper(),
         True,
         (C_ACCENT[0] // 3, C_ACCENT[1] // 3, 0),
     )
@@ -144,7 +144,7 @@ def draw_games_view(app, mouse_pos):
     desc_y = rect_panel_bg.y + 460
     lines = [
         f"Système: {game['platform'].upper()}",
-        f"{game['resume']}",
+        f"{game['Description']}",
     ]
     for line in lines:
         t = utils.FONT_REG.render(line, True, C_TXT_SEC)
