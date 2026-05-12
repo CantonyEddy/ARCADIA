@@ -160,7 +160,7 @@ class Choice(Widget):
             self.index = (self.index - 1) % len(self.options)
             self.on_change(self.index)
             return True
-        if key == pygame.K_RIGHT:
+        if key in (pygame.K_RIGHT, pygame.K_RETURN, pygame.K_SPACE):
             self.index = (self.index + 1) % len(self.options)
             self.on_change(self.index)
             return True

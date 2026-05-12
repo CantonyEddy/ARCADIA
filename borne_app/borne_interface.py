@@ -8,6 +8,7 @@ from typing import List, Tuple
 import pygame
 
 from . import config, game_scanner, launcher, utils
+from .gamepad import GamepadManager
 from .sidebar import Sidebar
 from .topbar import TopBar
 from .utils import (
@@ -34,6 +35,10 @@ ACCENT_OPTIONS: List[Tuple[str, List[int]]] = [
     ("Bleu",   [0, 140, 255]),
     ("Vert",   [60, 200, 100]),
     ("Rose",   [230, 80, 180]),
+    ("Violet", [180, 80, 230]),
+    ("Jaune",  [255, 220, 0]),
+    ("Blanc",  [255, 255, 255]),
+    ("Gris",   [160, 160, 160]),
 ]
 
 BG_MUSIC_PATH = (
@@ -60,8 +65,9 @@ class BorneInterface:
         except pygame.error as e:
             logger.warning("Init audio impossible : %s", e)
 
-        # Manette (lecture seule pour l'instant)
+        # Manettes
         pygame.joystick.init()
+        self.gamepad = GamepadManager()
 
         # Écran
         info = pygame.display.Info()
@@ -169,7 +175,11 @@ class BorneInterface:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                elif event.type == pygame.KEYDOWN:
+                    continue
+                # Manette : traduit en KEYDOWN synthétiques (postés en file)
+                if self.gamepad.handle_event(event):
+                    continue
+                if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
                     elif event.key in (
@@ -184,6 +194,9 @@ class BorneInterface:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.check_click(mouse_pos)
+
+            # Répétition des directions maintenues sur la manette
+            self.gamepad.tick()
 
             self.draw(time_str, mouse_pos)
             pygame.display.flip()
@@ -335,10 +348,18 @@ class BorneInterface:
     def handle_enter(self, key: int) -> None:
         if self.current_view == "GAMES":
             self.lancer_jeu()
-        elif self.current_view == "SETTINGS" and self.focus_area == "SETTINGS_WIDGETS":
-            widgets = self.settings_widgets[self.settings_category_index]
-            if widgets and 0 <= self.settings_widget_index < len(widgets):
-                widgets[self.settings_widget_index].handle_key(key)
+            return
+        if self.current_view == "SETTINGS":
+            if self.focus_area == "SETTINGS_CATS":
+                # Appui sur A/Entrée depuis la liste des catégories = entrer dans les widgets
+                widgets = self.settings_widgets[self.settings_category_index]
+                if widgets:
+                    self.focus_area = "SETTINGS_WIDGETS"
+                    self.settings_widget_index = 0
+            elif self.focus_area == "SETTINGS_WIDGETS":
+                widgets = self.settings_widgets[self.settings_category_index]
+                if widgets and 0 <= self.settings_widget_index < len(widgets):
+                    widgets[self.settings_widget_index].handle_key(key)
 
     # ============================================================
     # SOURIS / CLICS
@@ -453,8 +474,8 @@ class BorneInterface:
             ],
             # CONTROLES
             [
-                InfoLine("État manette", self._gamepad_status),
-                InfoLine("Nombre de manettes", lambda: str(pygame.joystick.get_count())),
+                InfoLine("État manette", self.gamepad.status),
+                InfoLine("Nombre de manettes", lambda: str(self.gamepad.count())),
             ],
             # SYSTEME
             [
@@ -508,18 +529,6 @@ class BorneInterface:
     def _on_fps_toggle(self, enabled: bool) -> None:
         self.show_fps = enabled
         self._save_settings()
-
-    def _gamepad_status(self) -> str:
-        try:
-            count = pygame.joystick.get_count()
-            if count == 0:
-                return "Non connectée"
-            joy = pygame.joystick.Joystick(0)
-            if not joy.get_init():
-                joy.init()
-            return joy.get_name()
-        except pygame.error:
-            return "Erreur"
 
     def _scan_roms(self) -> None:
         logger.info("Rechargement de data_game.json …")
