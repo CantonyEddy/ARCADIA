@@ -8,7 +8,6 @@ from .. import utils
 from ..utils import (
     W_SIDEBAR,
     H_TOPBAR,
-    C_ACCENT,
 )
 
 if TYPE_CHECKING:
@@ -22,5 +21,5 @@ def draw_profile_view(app: "BorneInterface") -> None:
         app.w_content_area,
         app.h_content_area,
     )
-    txt = utils.FONT_TITLE.render("PROFILE", True, C_ACCENT)
+    txt = utils.FONT_TITLE.render("PROFILE", True, utils.C_ACCENT)
     app.ecran.blit(txt, txt.get_rect(center=area.center))

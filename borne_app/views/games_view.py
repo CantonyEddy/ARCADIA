@@ -13,8 +13,6 @@ from ..utils import (
     C_BG_TERTIARY,
     C_TXT_PRI,
     C_TXT_SEC,
-    C_ACCENT,
-    C_ACCENT_HOVER,
 )
 
 if TYPE_CHECKING:
@@ -52,7 +50,7 @@ def draw_games_view(app: "BorneInterface", mouse_pos: Tuple[int, int]) -> None:
         pygame.draw.rect(app.ecran, bg_col, rect_item, border_radius=RADIUS)
 
         if is_sel:
-            border_color = C_ACCENT if list_has_focus else (120, 120, 120)
+            border_color = utils.C_ACCENT if list_has_focus else (120, 120, 120)
             pygame.draw.rect(
                 app.ecran,
                 border_color,
@@ -82,7 +80,7 @@ def draw_games_view(app: "BorneInterface", mouse_pos: Tuple[int, int]) -> None:
         txt_sys = utils.FONT_SMALL.render(
             f"[{game.get('platform', '?')}]",
             True,
-            C_ACCENT if is_sel else (100, 100, 100),
+            utils.C_ACCENT if is_sel else (100, 100, 100),
         )
 
         app.ecran.blit(txt_name, (rect_item.x + 85, rect_item.y + 15))
@@ -93,7 +91,7 @@ def draw_games_view(app: "BorneInterface", mouse_pos: Tuple[int, int]) -> None:
     if list_has_focus:
         focus_rect = app.rect_list_area.inflate(-8, -8)
         pygame.draw.rect(
-            app.ecran, C_ACCENT, focus_rect, width=2, border_radius=RADIUS
+            app.ecran, utils.C_ACCENT, focus_rect, width=2, border_radius=RADIUS
         )
 
     # --- PANEL DÉTAIL (droite) ---
@@ -123,11 +121,11 @@ def draw_games_view(app: "BorneInterface", mouse_pos: Tuple[int, int]) -> None:
     app.ecran.blit(lbl_cover, rect_img_big)
 
     name_upper = game.get("name", "?").upper()
-    txt_big_title = utils.FONT_TITLE.render(name_upper, True, C_ACCENT)
+    txt_big_title = utils.FONT_TITLE.render(name_upper, True, utils.C_ACCENT)
     txt_shadow = utils.FONT_TITLE.render(
         name_upper,
         True,
-        (C_ACCENT[0] // 3, C_ACCENT[1] // 3, 0),
+        (utils.C_ACCENT[0] // 3, utils.C_ACCENT[1] // 3, 0),
     )
     app.ecran.blit(
         txt_shadow,
@@ -151,11 +149,11 @@ def draw_games_view(app: "BorneInterface", mouse_pos: Tuple[int, int]) -> None:
     rect_btn = pygame.Rect(0, 0, 220, 60)
     rect_btn.center = (cx, app.h_ecran - 100)
     is_hover = rect_btn.collidepoint(mouse_pos)
-    col_btn = C_ACCENT_HOVER if is_hover else C_ACCENT
+    col_btn = utils.C_ACCENT_HOVER if is_hover else utils.C_ACCENT
 
     pygame.draw.rect(
         app.ecran,
-        (C_ACCENT[0] // 2, C_ACCENT[1] // 2, 0),
+        (utils.C_ACCENT[0] // 2, utils.C_ACCENT[1] // 2, 0),
         rect_btn.move(0, 5),
         border_radius=30,
     )

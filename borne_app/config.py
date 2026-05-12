@@ -40,3 +40,39 @@ def get_all_core_keys() -> list[str]:
 def get_icon_path(key: str) -> str:
     """Récupère le chemin d'une icône depuis la section [icons]"""
     return config.get("icons", key)
+
+
+# --- User settings (datas/user_settings.json) ---
+
+USER_SETTINGS_PATH = Path(__file__).resolve().parent.parent / "datas" / "user_settings.json"
+
+DEFAULT_USER_SETTINGS: dict = {
+    "volume": 80,
+    "music_enabled": False,
+    "accent_color": [255, 107, 0],
+    "show_fps": False,
+}
+
+
+def load_user_settings() -> dict:
+    """Charge les préférences utilisateur ; retourne les défauts si fichier absent/corrompu."""
+    if not USER_SETTINGS_PATH.exists():
+        return dict(DEFAULT_USER_SETTINGS)
+    try:
+        with open(USER_SETTINGS_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return dict(DEFAULT_USER_SETTINGS)
+    merged = dict(DEFAULT_USER_SETTINGS)
+    if isinstance(data, dict):
+        merged.update(data)
+    return merged
+
+
+def save_user_settings(settings: dict) -> None:
+    """Écrit les préférences utilisateur de façon atomique (tmp + rename)."""
+    USER_SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = USER_SETTINGS_PATH.with_suffix(".json.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(settings, f, indent=2, ensure_ascii=False)
+    tmp.replace(USER_SETTINGS_PATH)

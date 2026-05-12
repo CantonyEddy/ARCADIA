@@ -1,24 +1,30 @@
+from __future__ import annotations
+
+import json
+import logging
+from pathlib import Path
+
 import pygame
 
+logger = logging.getLogger(__name__)
+
 # --- PALETTE DE COULEURS ---
-# Fonds
-C_BG_PRIMARY = (24, 24, 24)      # #181818 (Fond global)
-C_BG_SECONDARY = (37, 37, 37)    # #252525 (Panneaux, Sidebar)
-C_BG_TERTIARY = (48, 48, 48)     # #303030 (Survol / Sélection fond)
+C_BG_PRIMARY = (24, 24, 24)
+C_BG_SECONDARY = (37, 37, 37)
+C_BG_TERTIARY = (48, 48, 48)
 
-# Accent
-C_ACCENT = (255, 107, 0)         # #ff6b00 (Orange vif)
-C_ACCENT_HOVER = (255, 158, 0)   # Orange plus clair
+# Accent (peut être surchargé par datas/user_settings.json — cf. _load_user_accent)
+C_ACCENT = (255, 107, 0)
+C_ACCENT_HOVER = (255, 158, 0)
 
-# Textes
-C_TXT_PRI = (255, 255, 255)      # Blanc
-C_TXT_SEC = (160, 160, 160)      # Gris clair
+C_TXT_PRI = (255, 255, 255)
+C_TXT_SEC = (160, 160, 160)
 
 # --- DIMENSIONS ---
 W_SIDEBAR = 90
 H_TOPBAR = 80
 PADDING = 20
-RADIUS = 12                      # Coins arrondis
+RADIUS = 12
 
 
 # --- POLICES (remplies dynamiquement après pygame.init) ---
@@ -29,11 +35,8 @@ FONT_TITLE = None
 FONT_TIME = None
 
 
-def init_fonts():
-    """
-    Initialise les polices globales du module.
-    A appeler APRÈS pygame.init().
-    """
+def init_fonts() -> None:
+    """Initialise les polices globales. À appeler APRÈS pygame.init()."""
     global FONT_SMALL, FONT_REG, FONT_BOLD, FONT_TITLE, FONT_TIME
 
     fonts = ["Segoe UI", "Verdana", "Arial"]
@@ -44,15 +47,37 @@ def init_fonts():
     FONT_TIME = pygame.font.SysFont("Consolas", 24, bold=True)
 
 
+def _load_user_accent() -> None:
+    """
+    Lit datas/user_settings.json (s'il existe) pour surcharger C_ACCENT.
+    Appelé à l'import du module pour que tous les `from .utils import C_ACCENT`
+    voient la couleur choisie par l'utilisateur.
+    """
+    global C_ACCENT, C_ACCENT_HOVER
+    try:
+        path = Path(__file__).resolve().parent.parent / "datas" / "user_settings.json"
+        if not path.exists():
+            return
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        color = data.get("accent_color")
+        if isinstance(color, (list, tuple)) and len(color) == 3:
+            C_ACCENT = tuple(int(c) for c in color)
+            C_ACCENT_HOVER = tuple(min(255, int(c) + 50) for c in C_ACCENT)
+    except (OSError, json.JSONDecodeError, ValueError) as e:
+        logger.warning("Lecture accent utilisateur échouée : %s", e)
+
+
+_load_user_accent()
+
+
 class ImageCache:
-    """
-    Petit cache d'images pour éviter de recharger les textures à chaque frame.
-    """
+    """Petit cache d'images pour éviter de recharger les textures à chaque frame."""
 
-    def __init__(self):
-        self._cache = {}
+    def __init__(self) -> None:
+        self._cache: dict = {}
 
-    def clear(self):
+    def clear(self) -> None:
         self._cache = {}
 
     def get(self, path, size, color_override=None):
@@ -68,7 +93,7 @@ class ImageCache:
 
                 self._cache[key] = img
             except Exception as e:
-                print(f"Erreur chargement {path}: {e}")
+                logger.warning("Échec chargement image %s : %s", path, e)
                 fallback = pygame.Surface(size)
                 fallback.fill((255, 0, 255))
                 self._cache[key] = fallback

@@ -1,0 +1,10 @@
+{
+  "volume": 30,
+  "music_enabled": false,
+  "accent_color": [
+    230,
+    80,
+    180
+  ],
+  "show_fps": false
+}

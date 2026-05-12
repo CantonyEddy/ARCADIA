@@ -1,11 +1,10 @@
 import pygame
-from . import config
+from . import config, utils
 from .utils import (
     W_SIDEBAR,
     H_TOPBAR,
     C_BG_SECONDARY,
     C_BG_TERTIARY,
-    C_ACCENT,
     C_TXT_SEC,
 )
 
@@ -43,7 +42,7 @@ class Sidebar:
         if self.focus:
             pygame.draw.rect(
                 screen,
-                C_ACCENT,
+                utils.C_ACCENT,
                 self.rect.inflate(-4, -4),
                 width=2,
                 border_radius=10,
@@ -57,7 +56,7 @@ class Sidebar:
             rect.center = center
             self.icon_rects.append((rect, char, i))
 
-            color = C_ACCENT if i == self.selected_index else C_TXT_SEC
+            color = utils.C_ACCENT if i == self.selected_index else C_TXT_SEC
 
             if char == "A":
                 # Avatar circulaire

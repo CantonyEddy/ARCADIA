@@ -5,8 +5,6 @@ from .utils import (
     H_TOPBAR,
     C_BG_SECONDARY,
     C_BG_TERTIARY,
-    C_ACCENT,
-    C_ACCENT_HOVER,
     C_TXT_PRI,
     C_TXT_SEC,
 )
@@ -32,7 +30,7 @@ class TopBar:
         if self.focus:
             pygame.draw.rect(
                 screen,
-                C_ACCENT,
+                utils.C_ACCENT,
                 self.rect.inflate(-4, -4),
                 width=2,
                 border_radius=10,
@@ -43,9 +41,9 @@ class TopBar:
             for i, tab in enumerate(self.tabs):
                 is_active = i == self.selected_tab
                 bg_color = (
-                    C_ACCENT_HOVER
+                    utils.C_ACCENT_HOVER
                     if is_active and self.focus
-                    else (C_ACCENT if is_active else C_BG_SECONDARY)
+                    else (utils.C_ACCENT if is_active else C_BG_SECONDARY)
                 )
                 txt_color = C_TXT_PRI if is_active else C_TXT_SEC
                 txt_surf = utils.FONT_BOLD.render(tab.upper(), True, txt_color)

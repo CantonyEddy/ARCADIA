@@ -8,7 +8,6 @@ from .. import utils
 from ..utils import (
     W_SIDEBAR,
     H_TOPBAR,
-    C_ACCENT,
     C_BG_SECONDARY,
     C_TXT_PRI,
 )
@@ -26,7 +25,7 @@ def draw_home_view(app: "BorneInterface") -> None:
         app.h_content_area,
     )
 
-    title = utils.FONT_TITLE.render("HOME", True, C_ACCENT)
+    title = utils.FONT_TITLE.render("HOME", True, utils.C_ACCENT)
     app.ecran.blit(title, title.get_rect(midtop=(area.centerx, area.y + 40)))
 
     buttons = [
