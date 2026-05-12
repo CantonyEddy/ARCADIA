@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pygame
 
 from .. import utils
@@ -7,8 +11,11 @@ from ..utils import (
     C_ACCENT,
 )
 
+if TYPE_CHECKING:
+    from ..borne_interface import BorneInterface
 
-def draw_settings_view(app):
+
+def draw_settings_view(app: "BorneInterface") -> None:
     area = pygame.Rect(
         W_SIDEBAR,
         H_TOPBAR,
@@ -17,5 +24,3 @@ def draw_settings_view(app):
     )
     txt = utils.FONT_TITLE.render("SETTINGS", True, C_ACCENT)
     app.ecran.blit(txt, txt.get_rect(center=area.center))
-
-

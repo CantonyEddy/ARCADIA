@@ -1,22 +1,27 @@
-import sys
+from __future__ import annotations
+
 import datetime
+import logging
+
 import pygame
 
-from . import game_scanner, launcher, config
-from .utils import (
-    C_BG_PRIMARY,
-    W_SIDEBAR,
-    H_TOPBAR,
-    PADDING,
-    init_fonts,
-    ImageCache,
-)
+from . import config, game_scanner, launcher, utils
 from .sidebar import Sidebar
 from .topbar import TopBar
-from .views.home_view import draw_home_view
+from .utils import (
+    C_BG_PRIMARY,
+    H_TOPBAR,
+    PADDING,
+    W_SIDEBAR,
+    ImageCache,
+    init_fonts,
+)
 from .views.games_view import draw_games_view
-from .views.settings_view import draw_settings_view
+from .views.home_view import draw_home_view
 from .views.profile_view import draw_profile_view
+from .views.settings_view import draw_settings_view
+
+logger = logging.getLogger(__name__)
 
 
 class BorneInterface:
@@ -27,10 +32,9 @@ class BorneInterface:
     - délégation du rendu à la sidebar, topbar et vues.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pygame.init()
 
-        # Configuration écran
         info = pygame.display.Info()
         self.w_ecran = info.current_w
         self.h_ecran = info.current_h
@@ -41,27 +45,22 @@ class BorneInterface:
         )
         pygame.display.set_caption("Arcade Dashboard")
 
-        # Polices globales (remplies dans utils.init_fonts)
         init_fonts()
 
-        # Données jeux / plateformes
         self.games_list = game_scanner.load_games_data()
-        self.games_list_by_platform = []
+        self.games_list_by_platform: list[dict] = []
         tabs = config.get_all_core_keys()
 
-        # Composants UI
         self.sidebar = Sidebar(self.h_ecran)
         self.topbar = TopBar(self.w_ecran, tabs)
 
-        # Etat de navigation
         self.current_view = "GAMES"  # HOME | GAMES | SETTINGS | PROFILE
         self.focus_area = "TOPBAR"   # "SIDEBAR" | "TOPBAR" | "LIST"
 
-        # Liste de jeux
         self.selected_index = 0
         self.scroll_y = 0
+        self._last_tab_index: int | None = None
 
-        # Zones de layout
         self.rect_sidebar = pygame.Rect(0, 0, W_SIDEBAR, self.h_ecran)
         self.rect_topbar = pygame.Rect(
             W_SIDEBAR, 0, self.w_ecran - W_SIDEBAR, H_TOPBAR
@@ -70,7 +69,6 @@ class BorneInterface:
         self.w_content_area = self.w_ecran - W_SIDEBAR
         self.h_content_area = self.h_ecran - H_TOPBAR
 
-        # Liste (40 %) / Détails (60 %)
         self.w_list_panel = int(self.w_content_area * 0.4)
         self.w_detail_panel = self.w_content_area - self.w_list_panel
 
@@ -84,15 +82,15 @@ class BorneInterface:
             self.h_content_area,
         )
 
-        # Paramètres liste
         self.item_height = 80
         self.item_margin = 15
 
-        # Cache textures/images
         self.image_cache = ImageCache()
 
+        self.refresh_games_for_selected_tab()
+
     # --------- BOUCLE PRINCIPALE ----------
-    def run(self):
+    def run(self) -> None:
         clock = pygame.time.Clock()
         running = True
 
@@ -128,10 +126,9 @@ class BorneInterface:
             clock.tick(60)
 
         pygame.quit()
-        sys.exit()
 
     # --------- LOGIQUE LISTE / SCROLL ----------
-    def ajuster_scroll(self):
+    def ajuster_scroll(self) -> None:
         y_pos = self.selected_index * (self.item_height + self.item_margin) + PADDING
 
         if y_pos < self.scroll_y:
@@ -141,7 +138,7 @@ class BorneInterface:
                 y_pos + self.item_height + PADDING - self.rect_list_area.height
             )
 
-    def limiter_scroll(self):
+    def limiter_scroll(self) -> None:
         content_h = len(self.games_list_by_platform) * (
             self.item_height + self.item_margin
         ) + PADDING
@@ -149,8 +146,7 @@ class BorneInterface:
         self.scroll_y = max(0, min(self.scroll_y, max_s))
 
     # --------- NAVIGATION CLAVIER ----------
-    def handle_arrow_key(self, key):
-        # Navigation verticale
+    def handle_arrow_key(self, key: int) -> None:
         if key == pygame.K_UP:
             if self.focus_area == "SIDEBAR":
                 if self.sidebar.selected_index > 0:
@@ -183,7 +179,6 @@ class BorneInterface:
                 )
                 self.ajuster_scroll()
 
-        # Navigation horizontale
         elif key == pygame.K_LEFT:
             if self.focus_area == "TOPBAR" and self.current_view == "GAMES":
                 if self.topbar.selected_tab > 0:
@@ -208,13 +203,11 @@ class BorneInterface:
                 self.focus_area = "TOPBAR"
 
     # --------- SOURIS / CLICS ----------
-    def check_click(self, pos):
-        # Sidebar ?
+    def check_click(self, pos: tuple[int, int]) -> None:
         if self.rect_sidebar.collidepoint(pos):
             self.handle_sidebar_click(pos)
             return
 
-        # Liste de jeux ?
         if self.rect_list_area.collidepoint(pos) and self.current_view == "GAMES":
             rel_y = pos[1] - self.rect_list_area.y + self.scroll_y - PADDING
             idx = int(rel_y // (self.item_height + self.item_margin))
@@ -222,7 +215,6 @@ class BorneInterface:
                 self.selected_index = idx
                 return
 
-        # Bouton jouer ?
         cx = self.rect_detail_area.centerx
         cy = self.h_ecran - 100
         btn_rect = pygame.Rect(0, 0, 220, 60)
@@ -230,7 +222,7 @@ class BorneInterface:
         if btn_rect.collidepoint(pos):
             self.lancer_jeu()
 
-    def handle_sidebar_click(self, pos):
+    def handle_sidebar_click(self, pos: tuple[int, int]) -> None:
         for rect, char, idx in self.sidebar.icon_rects:
             if rect.collidepoint(pos):
                 self.sidebar.selected_index = idx
@@ -239,8 +231,15 @@ class BorneInterface:
                 return
 
     # --------- LANCEMENT JEU ----------
-    def lancer_jeu(self):
+    def lancer_jeu(self) -> None:
         if not self.games_list_by_platform:
+            return
+        if not (0 <= self.selected_index < len(self.games_list_by_platform)):
+            logger.warning(
+                "selected_index=%d hors bornes (taille=%d)",
+                self.selected_index,
+                len(self.games_list_by_platform),
+            )
             return
 
         game = self.games_list_by_platform[self.selected_index]
@@ -250,9 +249,7 @@ class BorneInterface:
         overlay.set_alpha(200)
         self.ecran.blit(overlay, (0, 0))
 
-        # Texte simple de lancement
-        font = pygame.font.SysFont(["Segoe UI", "Verdana", "Arial"], 40, bold=True)
-        msg = font.render("LANCEMENT...", True, (255, 107, 0))
+        msg = utils.FONT_TITLE.render("LANCEMENT...", True, (255, 107, 0))
         self.ecran.blit(msg, msg.get_rect(center=(self.w_ecran // 2, self.h_ecran // 2)))
         pygame.display.flip()
         pygame.time.wait(500)
@@ -264,38 +261,40 @@ class BorneInterface:
         )
 
     # --------- UTILS JEUX / TABS ----------
-    def get_games_for_selected_tab(self):
+    def refresh_games_for_selected_tab(self) -> None:
+        """Recalcule games_list_by_platform uniquement si le tab a changé."""
+        if self._last_tab_index == self.topbar.selected_tab:
+            return
         platform_key = self.topbar.tabs[self.topbar.selected_tab]
         self.games_list_by_platform = [
             g
             for g in self.games_list
-            if g["platform"].upper() == platform_key.upper()
+            if g.get("platform", "").upper() == platform_key.upper()
         ]
+        self._last_tab_index = self.topbar.selected_tab
+        if self.selected_index >= len(self.games_list_by_platform):
+            self.selected_index = 0
 
     # --------- RENDU GLOBAL ----------
-    def draw_shell(self, time_str):
-        # Met à jour le focus visuel des composants
+    def draw_shell(self, time_str: str) -> None:
         self.sidebar.focus = self.focus_area == "SIDEBAR"
         self.topbar.focus = self.focus_area == "TOPBAR"
 
         self.sidebar.draw(self)
         self.topbar.draw(self.ecran, self.current_view, time_str)
 
-    def draw(self, time_str, mouse_pos):
+    def draw(self, time_str: str, mouse_pos: tuple[int, int]) -> None:
         self.ecran.fill(C_BG_PRIMARY)
         self.ecran.set_clip(None)
 
         self.draw_shell(time_str)
 
-        # Contenu principal (vues)
         if self.current_view == "HOME":
             draw_home_view(self)
         elif self.current_view == "GAMES":
-            self.get_games_for_selected_tab()
+            self.refresh_games_for_selected_tab()
             draw_games_view(self, mouse_pos)
         elif self.current_view == "SETTINGS":
             draw_settings_view(self)
         elif self.current_view == "PROFILE":
             draw_profile_view(self)
-
-

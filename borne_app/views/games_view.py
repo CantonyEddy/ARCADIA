@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Tuple
+
 import pygame
 
 from .. import utils
@@ -13,15 +17,13 @@ from ..utils import (
     C_ACCENT_HOVER,
 )
 
+if TYPE_CHECKING:
+    from ..borne_interface import BorneInterface
 
-def draw_games_view(app, mouse_pos):
-    """
-    Vue principale des jeux : liste à gauche, détails à droite.
-    Reprend la logique de l'ancienne méthode draw_games_view de BorneInterface.
-    """
-    # --- LISTE DES JEUX (gauche) ---
+
+def draw_games_view(app: "BorneInterface", mouse_pos: Tuple[int, int]) -> None:
+    """Vue principale des jeux : liste à gauche, détails à droite."""
     app.ecran.set_clip(app.rect_list_area)
-    app.get_games_for_selected_tab()
 
     start_y = app.rect_list_area.y + PADDING - app.scroll_y
     list_has_focus = app.focus_area == "LIST"
@@ -70,18 +72,15 @@ def draw_games_view(app, mouse_pos):
                 border_radius=3,
             )
 
-        # Thumbnail
         rect_thumb = pygame.Rect(rect_item.x + 10, rect_item.y + 10, 60, 60)
-        rect_thumb_img = app.image_cache.get(game["cover"], (60, 60))
-        app.ecran.blit(rect_thumb_img, rect_thumb)
-        pygame.draw.rect(app.ecran, (54, 20, 98), rect_thumb, border_radius=8)
+        thumb_path = game.get("cover", "")
+        rect_thumb_img = app.image_cache.get(thumb_path, (60, 60))
         app.ecran.blit(rect_thumb_img, rect_thumb)
 
-        # Textes
         title_color = C_TXT_PRI if (is_sel and list_has_focus) else C_TXT_SEC
-        txt_name = utils.FONT_BOLD.render(game["name"], True, title_color)
+        txt_name = utils.FONT_BOLD.render(game.get("name", "?"), True, title_color)
         txt_sys = utils.FONT_SMALL.render(
-            f"[{game['platform']}]",
+            f"[{game.get('platform', '?')}]",
             True,
             C_ACCENT if is_sel else (100, 100, 100),
         )
@@ -107,7 +106,6 @@ def draw_games_view(app, mouse_pos):
     game = app.games_list_by_platform[app.selected_index]
     cx = rect_panel_bg.centerx
 
-    # Grande image
     rect_img_big = pygame.Rect(0, 0, 300, 300)
     rect_img_big.center = (cx, rect_panel_bg.y + 200)
 
@@ -116,7 +114,7 @@ def draw_games_view(app, mouse_pos):
     )
     pygame.draw.rect(app.ecran, (50, 50, 50), rect_img_big, border_radius=RADIUS)
 
-    lbl_cover_base = app.image_cache.get(game["cover"], (300, 300))
+    lbl_cover_base = app.image_cache.get(game.get("cover", ""), (300, 300))
     lbl_cover = lbl_cover_base.copy()
 
     mask = pygame.Surface((300, 300), pygame.SRCALPHA)
@@ -124,10 +122,10 @@ def draw_games_view(app, mouse_pos):
     lbl_cover.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     app.ecran.blit(lbl_cover, rect_img_big)
 
-    # Titre
-    txt_big_title = utils.FONT_TITLE.render(game["name"].upper(), True, C_ACCENT)
+    name_upper = game.get("name", "?").upper()
+    txt_big_title = utils.FONT_TITLE.render(name_upper, True, C_ACCENT)
     txt_shadow = utils.FONT_TITLE.render(
-        game["name"].upper(),
+        name_upper,
         True,
         (C_ACCENT[0] // 3, C_ACCENT[1] // 3, 0),
     )
@@ -140,18 +138,16 @@ def draw_games_view(app, mouse_pos):
         txt_big_title.get_rect(center=(cx, rect_panel_bg.y + 400)),
     )
 
-    # Description
     desc_y = rect_panel_bg.y + 460
     lines = [
-        f"Système: {game['platform'].upper()}",
-        f"{game['resume']}",
+        f"Système: {game.get('platform', '?').upper()}",
+        f"{game.get('resume', '')}",
     ]
     for line in lines:
         t = utils.FONT_REG.render(line, True, C_TXT_SEC)
         app.ecran.blit(t, t.get_rect(center=(cx, desc_y)))
         desc_y += 30
 
-    # Bouton JOUER
     rect_btn = pygame.Rect(0, 0, 220, 60)
     rect_btn.center = (cx, app.h_ecran - 100)
     is_hover = rect_btn.collidepoint(mouse_pos)
@@ -167,5 +163,3 @@ def draw_games_view(app, mouse_pos):
 
     lbl_jouer = utils.FONT_BOLD.render("JOUER", True, C_BG_SECONDARY)
     app.ecran.blit(lbl_jouer, lbl_jouer.get_rect(center=rect_btn.center))
-
-

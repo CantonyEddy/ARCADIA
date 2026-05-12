@@ -23,12 +23,7 @@ class TopBar:
         self.focus = False
         self.tabs = list(tabs)
 
-        # Polices locales pour la topbar (évite les soucis de globals None)
-        fonts = ["Segoe UI", "Verdana", "Arial"]
-        self.font_bold = pygame.font.SysFont(fonts, 24, bold=True)
-        self.font_time = pygame.font.SysFont("Consolas", 24, bold=True)
-
-    def draw(self, screen: pygame.Surface, current_view: str, time_str: str):
+    def draw(self, screen: pygame.Surface, current_view: str, time_str: str) -> None:
         bg = C_BG_TERTIARY if self.focus else C_BG_SECONDARY
         pygame.draw.rect(screen, bg, self.rect)
         pygame.draw.line(
@@ -53,7 +48,7 @@ class TopBar:
                     else (C_ACCENT if is_active else C_BG_SECONDARY)
                 )
                 txt_color = C_TXT_PRI if is_active else C_TXT_SEC
-                txt_surf = self.font_bold.render(tab.upper(), True, txt_color)
+                txt_surf = utils.FONT_BOLD.render(tab.upper(), True, txt_color)
                 w_pill = txt_surf.get_width() + 40
                 rect_pill = pygame.Rect(
                     x_tab, (H_TOPBAR - 40) // 2, w_pill, 40
@@ -63,7 +58,7 @@ class TopBar:
                 screen.blit(txt_surf, txt_surf.get_rect(center=rect_pill.center))
                 x_tab += w_pill + 20
 
-        txt_time = self.font_time.render(time_str, True, C_TXT_SEC)
+        txt_time = utils.FONT_TIME.render(time_str, True, C_TXT_SEC)
         screen.blit(
             txt_time,
             (

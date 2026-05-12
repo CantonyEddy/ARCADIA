@@ -1,18 +1,23 @@
 # borne_app/game_scanner.py
-import os
-from . import config  # Importe notre module config.py
+from __future__ import annotations
 
-data_game_path = os.path.join(os.path.dirname(__file__), '..', 'datas', 'data_game.json')
+import logging
+from pathlib import Path
 
-def load_games_data():  # <-- VÉRIFIE BIEN QU'IL N'Y A RIEN ENTRE LES PARENTHÈSES
-    """Scanne les datas pour retourne une liste de jeux."""
-    print("--- Démarrage du scan des datas ---")
-    
-    # Récupère les datas des jeux depuis le fichier JSON
-    games_data = config.load_json(data_game_path)
-    print(f"--- Scan terminé : {len(games_data)} jeux trouvés ---")
-    print("-------------------------------------")
-    print(games_data)
+from . import config
+
+logger = logging.getLogger(__name__)
+
+DATA_GAME_PATH = Path(__file__).resolve().parent.parent / "datas" / "data_game.json"
+
+
+def load_games_data() -> list[dict]:
+    """Charge les données de jeux depuis datas/data_game.json."""
+    logger.info("Chargement des jeux depuis %s", DATA_GAME_PATH)
+    try:
+        games_data = config.load_json(DATA_GAME_PATH)
+    except FileNotFoundError:
+        logger.error("Fichier de jeux introuvable : %s", DATA_GAME_PATH)
+        return []
+    logger.info("%d jeux chargés", len(games_data))
     return games_data
-
-    

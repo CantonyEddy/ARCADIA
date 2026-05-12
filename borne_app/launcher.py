@@ -1,68 +1,48 @@
 # borne_app/launcher.py
-import subprocess
+from __future__ import annotations
+
+import logging
 import platform
-import os
+import subprocess
+from pathlib import Path
+
 from . import config
 
-def launch_game(game_data):
+logger = logging.getLogger(__name__)
+
+
+def launch_game(game_data: dict) -> None:
     """Lance un jeu en utilisant les infos de game_data."""
-    
-    # --- DEBUG 1: Qu'est-ce que je reçois ? ---
-    print("\n--- DEBUG (launcher.py) ---")
-    print(f"Données reçues : {game_data}")
-    print("------------------------------\n")
-    
+    logger.debug("Données reçues : %s", game_data)
+
+    retroarch_cmd: str | None = None
+    core_path: str | None = None
+    rom_path: str | None = None
+
     try:
-        # 1. Récupère les chemins de base
-        retroarch_cmd = config.get_path('retroarch_exe')
-        cores_dir = config.get_path('cores_dir')
+        retroarch_cmd = config.get_path("retroarch_exe")
+        cores_dir = config.get_path("cores_dir")
 
-        # 2. Construit le nom complet du core
-        core_name = config.get_core_map(game_data['platform']) # Doit être "snes9x_libretro", etc.
+        core_name = config.get_core_map(game_data["platform"])
         core_ext = ".dll" if platform.system() == "Windows" else ".so"
-        core_path = os.path.join(cores_dir, f"{core_name}{core_ext}")
-        
-        # 3. Récupère le chemin de la ROM
-        rom_path = game_data['rom_path']
-        
-        # --- DEBUG 2: Quels sont les chemins finaux ? ---
-        print("--- DEBUG (launcher.py) ---")
-        print(f"Chemin RetroArch : {retroarch_cmd}")
-        print(f"Chemin Cores Dir : {cores_dir}")
-        print(f"Nom Core : {core_name}")
-        print(f"Chemin Core FINAL : {core_path}")
-        print(f"Chemin ROM FINAL : {rom_path}")
-        print("------------------------------\n")
+        core_path = str(Path(cores_dir) / f"{core_name}{core_ext}")
 
-        print("Le frontend (Kivy) est en pause...")
-        
+        rom_path = game_data["rom_path"]
+
+        logger.debug("RetroArch=%s | core=%s | rom=%s", retroarch_cmd, core_path, rom_path)
+
         commande = [retroarch_cmd, "-L", core_path, rom_path]
-        
-        # --- DEBUG 3: Quelle est la commande exacte ? ---
-        print(f"COMMANDE ENVOYÉE : {' '.join(commande)}")
-        
-        # On utilise check=True pour que ça lève une erreur si ça échoue
-        subprocess.run(commande, check=True)
-    
-    except KeyError as e:
-        # --- DEBUG 4: Erreur si 'core_name' n'existe pas ---
-        print(f"!!!!! ERREUR FATALE (launcher.py) !!!!!")
-        print(f"La clé {e} n'a pas été trouvée dans game_data.")
-        print("Vérifie que 'game_scanner.py' envoie bien 'platform'.")
-        print("-------------------------------------------\n")
+        logger.info("Lancement : %s", " ".join(commande))
 
+        subprocess.run(commande, check=True)
+
+    except KeyError as e:
+        logger.error(
+            "Clé %s manquante dans game_data — game_scanner doit fournir 'platform' et 'rom_path'.",
+            e,
+        )
     except Exception as e:
-        # --- DEBUG 5: Attrape TOUTES les autres erreurs ---
-        print(f"!!!!! ERREUR FATALE (launcher.py) !!!!!")
-        print(f"Échec du lancement. Erreur : {e}")
-        print("Vérifie les points suivants :")
-        print("1. Tous les chemins dans 'config.ini' sont-ils PARFAITS ? (pas de fautes de frappe)")
-        print(f"2. Le fichier '{retroarch_cmd}' existe-t-il VRAIMENT ?")
-        print(f"3. Le fichier '{core_path}' existe-t-il VRAIMENT ?")
-        print(f"4. Le fichier '{rom_path}' existe-t-il VRAIMENT ?")
-        print("-------------------------------------------\n")
-    
-    print("\n---------------------------------")
-    print("RetroArch est fermé (ou n'a pas pu se lancer).")
-    print("Retour au frontend.")
-    print("---------------------------------\n")
+        logger.error("Échec du lancement : %s", e)
+        logger.error("Vérifie : retroarch=%r | core=%r | rom=%r", retroarch_cmd, core_path, rom_path)
+
+    logger.info("RetroArch fermé — retour au frontend.")
