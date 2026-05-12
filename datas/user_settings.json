@@ -2,9 +2,10 @@
   "volume": 30,
   "music_enabled": true,
   "accent_color": [
-    160,
-    160,
-    160
+    180,
+    80,
+    230
   ],
-  "show_fps": false
+  "show_fps": false,
+  "active_profile_id": 1
 }

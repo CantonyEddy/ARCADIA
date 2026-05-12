@@ -1,23 +1,19 @@
 # borne_app/game_scanner.py
+"""
+Charge la liste des jeux depuis la base SQLite (datas/arcadia.db).
+Le nom de la fonction est conservé pour compat avec l'UI existante.
+"""
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 
-from . import config
+from . import database
 
 logger = logging.getLogger(__name__)
 
-DATA_GAME_PATH = Path(__file__).resolve().parent.parent / "datas" / "data_game.json"
-
 
 def load_games_data() -> list[dict]:
-    """Charge les données de jeux depuis datas/data_game.json."""
-    logger.info("Chargement des jeux depuis %s", DATA_GAME_PATH)
-    try:
-        games_data = config.load_json(DATA_GAME_PATH)
-    except FileNotFoundError:
-        logger.error("Fichier de jeux introuvable : %s", DATA_GAME_PATH)
-        return []
-    logger.info("%d jeux chargés", len(games_data))
-    return games_data
+    """Retourne la liste des jeux sous forme de dicts (compatibles UI)."""
+    games = database.list_games()
+    logger.info("Chargement bibliothèque : %d jeux", len(games))
+    return games

@@ -71,6 +71,53 @@ def _load_user_accent() -> None:
 _load_user_accent()
 
 
+def draw_avatar(
+    screen: pygame.Surface,
+    profile: dict | None,
+    center: tuple,
+    diameter: int,
+    image_cache=None,
+    border_color: tuple | None = None,
+    border_width: int | None = None,
+) -> None:
+    """Dessine un avatar circulaire (image si disponible, sinon disque accent + initiale).
+
+    Utilisé à la fois par la sidebar (petit format) et la vue PROFILE (grand format).
+    """
+    radius = diameter // 2
+    cx, cy = center
+    profile = profile or {}
+    avatar_path = profile.get("avatar_path") or ""
+    img_loaded = False
+
+    if avatar_path and image_cache is not None:
+        try:
+            if Path(avatar_path).exists():
+                img = image_cache.get(avatar_path, (diameter, diameter))
+                mask = pygame.Surface((diameter, diameter), pygame.SRCALPHA)
+                pygame.draw.circle(mask, (255, 255, 255, 255), (radius, radius), radius)
+                clipped = img.copy()
+                clipped.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+                screen.blit(clipped, clipped.get_rect(center=(cx, cy)))
+                img_loaded = True
+        except (OSError, pygame.error) as e:
+            logger.warning("Chargement avatar %s échoué : %s", avatar_path, e)
+
+    if not img_loaded:
+        pygame.draw.circle(screen, C_ACCENT, (cx, cy), radius)
+        initiale = (profile.get("username") or "?").strip()[:1].upper() or "?"
+        font_size = max(8, int(diameter * 0.55))
+        font = pygame.font.SysFont(
+            ["Segoe UI", "Verdana", "Arial"], font_size, bold=True
+        )
+        letter = font.render(initiale, True, C_TXT_PRI)
+        screen.blit(letter, letter.get_rect(center=(cx, cy)))
+
+    if border_color is not None:
+        bw = border_width if border_width is not None else max(2, diameter // 60)
+        pygame.draw.circle(screen, border_color, (cx, cy), radius, width=bw)
+
+
 class ImageCache:
     """Petit cache d'images pour éviter de recharger les textures à chaque frame."""
 

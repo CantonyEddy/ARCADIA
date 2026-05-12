@@ -51,6 +51,7 @@ DEFAULT_USER_SETTINGS: dict = {
     "music_enabled": False,
     "accent_color": [255, 107, 0],
     "show_fps": False,
+    "active_profile_id": None,
 }
 
 

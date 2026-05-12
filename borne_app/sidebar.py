@@ -59,10 +59,17 @@ class Sidebar:
             color = utils.C_ACCENT if i == self.selected_index else C_TXT_SEC
 
             if char == "A":
-                # Avatar circulaire
-                pygame.draw.circle(screen, C_BG_TERTIARY, center, 20)
-                if i == self.selected_index:
-                    pygame.draw.circle(screen, color, center, 22, width=2)
+                # Avatar du profil actif (cohérent avec la vue PROFILE)
+                is_sel = i == self.selected_index
+                utils.draw_avatar(
+                    screen,
+                    getattr(app, "active_profile", None),
+                    center,
+                    diameter=44,
+                    image_cache=app.image_cache,
+                    border_color=utils.C_ACCENT if is_sel else None,
+                    border_width=2,
+                )
             else:
                 # Icône image (home / games / settings)
                 icon_path = config.get_icon_path(char)

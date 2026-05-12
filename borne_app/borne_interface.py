@@ -7,7 +7,7 @@ from typing import List, Tuple
 
 import pygame
 
-from . import config, game_scanner, launcher, utils
+from . import config, database, game_scanner, launcher, utils
 from .gamepad import GamepadManager
 from .sidebar import Sidebar
 from .topbar import TopBar
@@ -86,6 +86,11 @@ class BorneInterface:
         self.volume: int = int(self._user_settings.get("volume", 80))
         self.music_enabled: bool = bool(self._user_settings.get("music_enabled", False))
         self.show_fps: bool = bool(self._user_settings.get("show_fps", False))
+
+        # Profil actif (crée "Joueur 1" si la table est vide)
+        self.active_profile = database.get_active_profile()
+        logger.info("Profil actif : %s (id=%d)",
+                    self.active_profile["username"], self.active_profile["id"])
 
         # Données jeux
         self.games_list = game_scanner.load_games_data()
